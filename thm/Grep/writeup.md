@@ -166,6 +166,8 @@ Overall, learnt a ton of stuff that I wouldn't able to otherwise if I just mindl
 
 If you've read this far then 1) you're stalking through my github repo or 2) you're also doing the room right now. Either way, thank you for reading and hope it was useful :)
 
+P.S: The IP address in the `php-reverse-shell.php` is not my actual IP haha, it's one of THM VPN server, just saying to deter any mischivious attempts... 
+
 
 
 
