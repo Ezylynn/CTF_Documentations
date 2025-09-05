@@ -4,7 +4,7 @@
 - OSINT
 - Nmap
 - Metasploit 
-- Privilege Escalation 
+- Binary Exploitation --> Privilege Escalation 
 - Gobuster
 
 ## Prompt:
