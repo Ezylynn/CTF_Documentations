@@ -3,6 +3,9 @@
 ## Skill used:
 - OSINT
 - Nmap
+- Metasploit 
+- Privilege Escalation 
+- Gobuster
 
 ## Prompt:
 Gain a shell, find the way and escalate your privileges!
@@ -184,4 +187,6 @@ After that the only thing we need to do, is run `/tmp/bash -p` which will give u
 ![exploit_06](images/exploit_06.png)
 
 ## Final Words 
-FUCK VM, more time was spent troubleshoot the VM than the actual CTF I felt like. I think I switched 3 desktops across period of 5 hours in total attempting this CTF. Overall, I learnt a lot despite feeling way out of depth near the end haha, definitely need more practice on Privilege Escalation, Metasploit, NetCat and other theoretical concepts/knowledges, since I'm mainly learning on the go
+FUCK VM, more time was spent troubleshoot the VM than the actual CTF I felt like. I think I switched 3 desktops across period of 5 hours in total attempting this CTF. Overall, I learnt a lot despite feeling way out of depth near the end haha, definitely need more practice on Privilege Escalation, Metasploit, NetCat and other theoretical concepts/knowledges, since I'm mainly learning on the go. 
+
+I think I'm just gonna stick to the 5 minutes CTF challenge for a while...
