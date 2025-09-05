@@ -1,36 +1,38 @@
-## Bandit Level 0 - 34 
+# Bandit Level 0 - 34 
 
-### Level 0
+*SPOILER ALERT: I did not censor the answer so just ahead up :)*
+
+## Level 0
 - Log into overthewire web server via SSH
   ssh bandit0@bandit.labs.overthewire.org -p2220
   `-p` means port number 
 
-#### Level 1
+## Level 1
 - Login to bandit1 via SSH using the password on the current dir of bandit0 
 - Cat readme file which reveal password: `ZjLjTmM6FvvyRnrb2rfNWOZOTa6ip5If`
 
-#### Level 2 
+## Level 2 
 - The password for the next level is stored in a file called - located in the home directory
 - Using `-` cause confusion as it can be intepret as a STDIN/STDOUT, need to specify the full location to use file i.e cat ./-
 - Password: `263JGJPfgU6LtdEvgfWU1XP5yac29mFx`
 
-#### Level 3
+## Level 3
 - The password for the next level is stored in a file called --spaces in this filename-- located in the home directory
 - The file name needs to be encapsulate in `" "` and specify specific file location due to the hyphen 
 - `cat "./--spaces in this filename--"` 
 - Password: `MNk8KNH3Usiio41PRUEoDFPqfxLPlSmx`
 
-#### Level 4
+## Level 4
 - The password for the next level is stored in a hidden file in the inhere directory
 - Change dir to `inhere` & `ls -la` to list all hidden files in dir which reveal `...Hiding-From-You`
 - Password: `2WmrDFRmJIq3IPxneAaMGhap0pFhF3NJ`
 
-#### Level 5
+## Level 5
 - The password for the next level is stored in the only human-readable file in the inhere directory. Tip: if your terminal is messed up, try the “reset” command.
 - Print out all files to look for the only human readable file via brute force, file `-file07` reveals the password
 - Password: `4oQYVPkxZOOEOO5pTW81FB8j8lxXGUQw`
 
-#### Level 6 
+## Level 6 
 - The password for the next level is stored in a file somewhere under the inhere directory and has all of the following properties:
     human-readable
     1033 bytes in size
